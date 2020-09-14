@@ -2,6 +2,13 @@
 __pycache__/
 *.py[cod]
 *$py.class
+apicache-py3
+pywikibot.lwp
+
+# User config
+user-api-key.py
+user-config.py
+user-password.py
 
 # C extensions
 *.so
@@ -123,3 +130,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+throttle.ctrl
