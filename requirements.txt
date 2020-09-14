@@ -1,0 +1,5 @@
+mwapi
+mwoauth
+pywikibot
+pyyaml
+requests_oauthlib
