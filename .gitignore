@@ -131,3 +131,4 @@ dmypy.json
 # Pyre type checker
 .pyre/
 throttle.ctrl
+.DS_Store
