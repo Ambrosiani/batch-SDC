@@ -171,10 +171,11 @@ def main(arguments):
     helper = Helper()
     for row in data:
         claims_to_add = {'claims': []}
+        filename = row[0][1]
+        page = pywikibot.Page(site, title='{}'.format(
+            urllib.parse.quote(filename)), ns=6)
         for pair in row:
             if pair[0].lower() == "filename":
-                filename = pair[1]
-                page = pywikibot.Page(site, title='{}'.format(urllib.parse.quote(filename)), ns=6)
                 mid = 'M' + str(page.pageid)
                 mediainfo = get_current_mediainfo(mid)
                 mediastatements = mediainfo.get("statements")
@@ -190,7 +191,7 @@ def main(arguments):
 
                 if main_value is None or len(main_value) == 0:
                     continue
-                
+
                 if not helper.validate_q(main_value,
                                          get_datatype(main_property)):
                     continue
@@ -201,10 +202,10 @@ def main(arguments):
                 claim_data = create_claim_json(
                     main_property, main_value,
                     valuetype=get_datatype(main_property))
-    
+
                 if check_if_already_present(mediastatements, claim_data):
                     continue
-                
+
                 if qualifier_properties:
                     qual_dict = {qualifier_properties[i]: qualifier_values[i]
                                  for i in range(
@@ -213,7 +214,9 @@ def main(arguments):
 
                 claims_to_add["claims"].append(claim_data)
         edit_comment = create_edit_comment(claims_to_add, custom_editsummary)
+
         write_statement(claims_to_add, mid, edit_comment)
+        page.save()
 
 
 def check_if_already_present(mediastatements, claim_data):
