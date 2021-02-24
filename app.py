@@ -42,7 +42,7 @@ def create_datavalue(value, valuetype):
     if valuetype == "wikibase-item":
         datavalue = {
             'value': {
-                'numeric-id': value[1:],
+                'numeric-id': int(value[1:]),
                 'id': value,
                 'entity-type': 'item'
             },
@@ -141,8 +141,19 @@ def write_statement(json_data, mid, summary):
 def read_data(filename):
     datalist = []
     with open(filename, 'r') as data:
-        for line in csv.DictReader(data):
-            datalist.append(line)
+        reader = csv.reader(data)
+        fieldnames = next(reader)
+        for line in reader:
+            file_data = []
+            for fieldname in enumerate(fieldnames):
+                field = fieldname[1]
+                try:
+                    content = line[fieldname[0]]
+                except IndexError:
+                    content = ""
+                claim_tuple = (field, content)
+                file_data.append(claim_tuple)
+            datalist.append(file_data)
     return datalist
 
 
@@ -160,39 +171,40 @@ def main(arguments):
     helper = Helper()
     for row in data:
         claims_to_add = {'claims': []}
-        filename = row.get("Filename")
-        page = pywikibot.Page(site, title='{}'.format(
-            urllib.parse.quote(filename)), ns=6)
-        mid = 'M' + str(page.pageid)
-        mediainfo = get_current_mediainfo(mid)
-        mediastatements = mediainfo.get("statements")
-        for key in row.keys():
-            if key.startswith("Caption|"):
-                language = key.split("|")[1]
-                content = helper.clean_up_string(row[key])
+        for pair in row:
+            if pair[0].lower() == "filename":
+                filename = pair[1]
+                page = pywikibot.Page(site, title='{}'.format(urllib.parse.quote(filename)), ns=6)
+                mid = 'M' + str(page.pageid)
+                mediainfo = get_current_mediainfo(mid)
+                mediastatements = mediainfo.get("statements")
+            elif pair[0].lower().startswith("caption|"):
+                language = pair[0].split("|")[1]
+                content = helper.clean_up_string(pair[1])
                 json_data = add_caption_json(language, content)
                 write_caption(json_data, mid, custom_editsummary)
-            elif key.startswith("P"):
-                property_with_qualifiers = key.split("|")
+            elif pair[0].lower().startswith("p"):
+                property_with_qualifiers = pair[0].split("|")
                 main_property = property_with_qualifiers[0]
-                main_value = helper.clean_up_string(row[key]).split("|")[0]
+                main_value = helper.clean_up_string(pair[1]).split("|")[0]
 
+                if main_value is None or len(main_value) == 0:
+                    continue
+                
                 if not helper.validate_q(main_value,
                                          get_datatype(main_property)):
                     continue
 
-                if not row[key].strip():
-                    continue
-
                 qualifier_properties = property_with_qualifiers[1:]
-                qualifier_values = row[key].split("|")[1:]
+                qualifier_values = pair[1].split("|")[1:]
 
                 claim_data = create_claim_json(
                     main_property, main_value,
                     valuetype=get_datatype(main_property))
+    
                 if check_if_already_present(mediastatements, claim_data):
                     continue
-
+                
                 if qualifier_properties:
                     qual_dict = {qualifier_properties[i]: qualifier_values[i]
                                  for i in range(
@@ -207,16 +219,17 @@ def main(arguments):
 def check_if_already_present(mediastatements, claim_data):
     present = False
     prop = claim_data["mainsnak"]["property"]
-
     if mediastatements:
         claims_in_file = mediastatements.get(prop)
         if claims_in_file:
             for claim_in_file in claims_in_file:
                 in_file = claim_in_file["mainsnak"].get(
                     "datavalue").get("value")
+                in_file = {k: in_file[k] for k in sorted(in_file)}
                 in_our_data = claim_data["mainsnak"].get(
                     "datavalue").get("value")
-                if sorted(in_file) == sorted(in_our_data):
+                in_our_data = {k: in_our_data[k] for k in sorted(in_our_data)}
+                if in_file == in_our_data:
                     present = True
     return present
 
