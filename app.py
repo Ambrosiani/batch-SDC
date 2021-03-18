@@ -169,7 +169,9 @@ def main(arguments):
     data = read_data(arguments.get("data"))
     custom_editsummary = arguments.get("summary")
     helper = Helper()
+    counter = 0
     for row in data:
+        counter = counter + 1
         claims_to_add = {'claims': []}
         filename = row[0][1]
         page = pywikibot.Page(site, title='{}'.format(
@@ -214,6 +216,7 @@ def main(arguments):
 
                 claims_to_add["claims"].append(claim_data)
         edit_comment = create_edit_comment(claims_to_add, custom_editsummary)
+        print("{} / {} -- {}".format(counter, len(data), filename))
 
         write_statement(claims_to_add, mid, edit_comment)
         page.save()
