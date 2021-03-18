@@ -1,5 +1,6 @@
 import argparse
 import csv
+from datetime import datetime
 import json
 import logging
 import urllib.parse
@@ -18,9 +19,27 @@ class Helper:
     def clean_up_string(self, somestring):
         return " ".join(somestring.split()).strip()
 
+    def timestamp_to_wbtime(self, timestampstring):
+        split_timestamp = timestampstring.split("-")
+        if len(split_timestamp) == 3:
+            date_pattern = '%Y-%m-%d'
+            precision = 11
+        elif len(split_timestamp) == 2:
+            date_pattern = '%Y-%m'
+            precision = 10
+        elif len(split_timestamp) == 1:
+            date_pattern = '%Y'
+            precision = 9
+        dateobject = datetime.strptime(timestampstring, date_pattern)
+        pywikibot_time = pywikibot.WbTime(year=dateobject.year,
+                                          month=dateobject.month,
+                                          day=dateobject.day)
+        pywikibot_time.precision = precision
+        return pywikibot_time.toWikibase()
+
     def validate_q(self, qstring, datatype):
         legit_value = False
-        if datatype == "string":
+        if datatype in ["time", "string"]:
             legit_value = True
         if datatype == "wikibase-item":
             item_data = requests.get(self.TITLES_API.format(qstring)).text
@@ -39,6 +58,7 @@ def add_caption_json(language, content):
 
 
 def create_datavalue(value, valuetype):
+    helper = Helper()
     if valuetype == "wikibase-item":
         datavalue = {
             'value': {
@@ -47,6 +67,11 @@ def create_datavalue(value, valuetype):
                 'entity-type': 'item'
             },
             'type': 'wikibase-entityid',
+        }
+    elif valuetype == "time":
+        datavalue = {
+            'value': helper.timestamp_to_wbtime(value),
+            'type': 'time',
         }
     elif valuetype == "string":
         datavalue = {

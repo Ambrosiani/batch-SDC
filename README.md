@@ -14,9 +14,13 @@ To run it you will have to install dependencies using:
 The script uses **Pywikibot** and expects to find a username in a `user-config.py` file.
 
 ## Features
-- Currently supported datatypes are `wikibase-item` (Wikidata item) and `string`.
-- If the target file already contains a statement with the same value as provided (regardless of the content of any qualifiers), a duplicate statement will **not** be created.
-- Multiple statements are [grouped in one edit](https://commons.wikimedia.org/w/index.php?title=File%3ATest.pdf&type=revision&diff=520547355&oldid=520541181).
+* Currently supported datatypes are `wikibase-item` (Wikidata item), `time` and `string`.
+  * For `time` type data, these three formats are supported:
+    * `2020-12-01`
+    * `2020-12`
+    * `2020`
+* If the target file already contains a statement with the same value as provided (regardless of the content of any qualifiers), a duplicate statement will **not** be created.
+* Multiple statements are [grouped in one edit](https://commons.wikimedia.org/w/index.php?title=File%3ATest.pdf&type=revision&diff=520547355&oldid=520541181).
 
 ## Data
 
@@ -29,15 +33,15 @@ python3 app.py --data data.csv
 The data is to be structured like this:
 
 ````
-Filename,Caption|sv,Caption|en,P180,P217|P195
-Test.pdf,beskrivning på svenska,caption in english,Q147,NMA.0096620-03|Q1142142
+Filename,Caption|sv,Caption|en,P180,P217|P195,P571
+Test.pdf,beskrivning på svenska,caption in english,Q147,NMA.0096620-03|Q1142142,2020-12-02
 ````
 
 The file can be prepared using software of your choice, such as OpenRefine or a spreadsheet, for convenient tabular display:
 
-| Filename      |Caption\|sv            |Caption\|en       |P180 |P217\|P195              |
-| --------------|-----------------------|------------------|-----|------------------------|
-| Test.pdf      | beskrivning på svenska|caption in english|Q147 |NMA.0096620-03\|Q1142142|
+| Filename      |Caption\|sv            |Caption\|en       |P180 |P217\|P195              |P571      |
+| --------------|-----------------------|------------------|-----|------------------------|----------|
+| Test.pdf      | beskrivning på svenska|caption in english|Q147 |NMA.0096620-03\|Q1142142|2020-12-02|
 
 This will add the following statements:
 - Caption _beskrivning på svenska_ in **Swedish**
@@ -45,4 +49,5 @@ This will add the following statements:
 - [Depicts](https://www.wikidata.org/wiki/Property:P180) → [kitten](https://www.wikidata.org/wiki/Q147)
 - [Inventory number](https://www.wikidata.org/wiki/Property:P217) → NMA.0096620-03
   - With qualifier [Collection](https://www.wikidata.org/wiki/Property:P195) → [Nordic Museum](https://www.wikidata.org/wiki/Q1142142)
+- [Inception](https://www.wikidata.org/wiki/Property:P571) → December 2, 2020
   
