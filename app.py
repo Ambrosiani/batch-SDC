@@ -39,7 +39,7 @@ class Helper:
 
     def validate_q(self, qstring, datatype):
         legit_value = False
-        if datatype in ["time", "string", "url"]:
+        if datatype in ["time", "string", "url", "external-id"]:
             legit_value = True
         if datatype == "wikibase-item":
             item_data = requests.get(self.TITLES_API.format(qstring)).text
@@ -73,7 +73,7 @@ def create_datavalue(value, valuetype):
             'value': helper.timestamp_to_wbtime(value),
             'type': 'time',
         }
-    elif valuetype in ["string", "url"]:
+    elif valuetype in ["string", "url", "external-id"]:
         datavalue = {
             'value': value,
             'type': 'string'
