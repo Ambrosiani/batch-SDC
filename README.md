@@ -14,7 +14,7 @@ To run it you will have to install dependencies using:
 The script uses **Pywikibot** and expects to find a username in a `user-config.py` file.
 
 ## Features
-* Currently supported datatypes are `wikibase-item` (Wikidata item), `time` and `string`.
+* Currently supported datatypes are `wikibase-item` (Wikidata item), `time`, `url` and `string`.
   * For `time` type data, these three formats are supported:
     * `2020-12-01`
     * `2020-12`
