@@ -201,6 +201,8 @@ def main(arguments):
         filename = row[0][1]
         page = pywikibot.Page(site, title='{}'.format(
             urllib.parse.quote(filename)), ns=6)
+        if not page.exists():
+            continue
         for pair in row:
             if pair[0].lower() == "filename":
                 mid = 'M' + str(page.pageid)
